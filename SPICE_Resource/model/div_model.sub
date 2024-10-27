@@ -1,0 +1,6 @@
+.subckt div_model dividend divisor quotient params:
+*the gain of quotient
++ k=1
+*the behavior
+Ex quotient 0 value={(V(dividend,0))/(V(divisor,0))*k}
+.ends div_model

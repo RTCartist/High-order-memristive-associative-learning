@@ -1,0 +1,40 @@
+********************************************************
+********************************************************
+*rectangular window, transformation, exp resistance relationship
+********************************************************
+********************************************************
+.subckt VTEAM_e TE BE XSV params:
++ alphaoff=1 alphaon=1 voff=-0.06 von=0.14 koff=4.83 kon=-3.59
++ Roff=15.5k Ron=3.0k woff=1 won=0 wini=1
+
+*resistive port
+.param xini={(wini-won)/(woff-won)}
+.func rcal(c,d) {(c/(Ron*(Roff/Ron)**d))}
+Gmem TE BE value={rcal(V(TE,BE),V(XSV))}
+*end of resistive port
+
+*state equation
+.param norm=1u
+.param koffn={norm*koff}
+.param konn={norm*kon}
+.func aLTb(a,b) {IF(a<b,1,0)}
+.func aGTb(a,b) {IF(a>b,1,0)}
+
+Ggplus 0 G value={konn*(V(TE,BE)/von-1)**alphaon*aGTb(V(TE,BE),von)}
+Ggminus 0 G value={koffn*(V(TE,BE)/voff-1)**alphaoff*aLTb(V(TE,BE),voff)}
+Raux G 0 1G
+Cint G 0 {norm} IC={0}
+xdiode1 G high idealdiode
+vhigh high 0 {0.5-F(xini)}
+xdiode2 low G idealdiode
+Vlow low 0 {-0.5-F(xini)}
+
+*G to x conversion
+Ex XSV 0 value={FI(v(G)+F(xini))}
+
+*Rectangular window
+.func FI(x) {TABLE(x,-0.5, 0, 0.5,1)}
+
+.func F(x) {TABLE(x,0, -0.5, 1,0.5)}
+
+.ends VTEAM_e
